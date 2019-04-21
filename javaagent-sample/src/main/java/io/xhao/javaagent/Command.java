@@ -9,13 +9,15 @@ import java.lang.reflect.Method;
 public class Command {
 
     public void run() {
-        Service service = new Service();
-        while (true) {
-            System.out.println("sleep 10s");
+        int count = 10;
+        while (count-- > 0) {
             try {
                 Thread.sleep(10000L);
-            } catch (InterruptedException e1) {
+            } catch (InterruptedException e) {
             }
+            System.out.println("sleep 10s");
+            Service service = new Service();
+            service.echo();
             try {
                 Method m = Service.class.getDeclaredMethod("hello", new Class<?>[0]);
                 try {
@@ -28,7 +30,5 @@ public class Command {
                 e.printStackTrace();
             }
         }
-        System.out.println("test end");
-
     }
 }

@@ -2,6 +2,7 @@ package io.xhao.javaagent;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.InvocationTargetException;
@@ -29,7 +30,9 @@ public class Agent {
         Arrays.asList(args.split(";")).forEach(str -> {
             classNames.add(str);
         });
-        AddMethodTransformer transformer = new AddMethodTransformer(classNames);
+        ClassFileTransformer transformer = new AddMethodTransformer(classNames);
+        instrumentation.addTransformer(transformer);
+        transformer = new ModifyMethodTransformer(classNames);
         instrumentation.addTransformer(transformer);
     }
 
@@ -50,8 +53,11 @@ public class Agent {
          * 
          * 如果能在类被定义完成前，则有机会完成重写
          */
-        // AddMethodTransformer transformer2 = new AddMethodTransformer(classNames);
-        // instrumentation.addTransformer(transformer2, true);
+        // ClassFileTransformer transformer = new AddMethodTransformer(classNames);
+        // instrumentation.addTransformer(transformer, true);
+
+        ClassFileTransformer transformer = new ModifyMethodTransformer(classNames);
+        instrumentation.addTransformer(transformer, true);
 
         classNames.forEach(str -> {
             try {
