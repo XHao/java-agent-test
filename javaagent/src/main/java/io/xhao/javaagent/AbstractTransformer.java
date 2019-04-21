@@ -38,7 +38,7 @@ public abstract class AbstractTransformer implements ClassFileTransformer {
 
         try {
             CtClass clazz = getCtClass(classfileBuffer, loader);
-            System.out.println("update " + className + " in " + clazz.getClassPool().getClassLoader());
+            System.out.println(name() + " update " + className + " in " + clazz.getClassPool().getClassLoader());
             updateClass(clazz);
             return clazz.toBytecode();
         } catch (IOException | RuntimeException | CannotCompileException | NotFoundException e) {
@@ -49,6 +49,10 @@ public abstract class AbstractTransformer implements ClassFileTransformer {
     }
 
     protected abstract void updateClass(CtClass clazz) throws CannotCompileException, NotFoundException;
+
+    protected String name() {
+        return this.getClass().getSimpleName();
+    }
 
     CtClass getCtClass(byte[] classFileBuffer, ClassLoader classLoader) throws IOException, RuntimeException {
         ClassPool classPool = new ClassPool(true);

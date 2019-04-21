@@ -26,6 +26,8 @@ public class Agent {
 
     public static void premain(String args, Instrumentation instrumentation) {
         System.out.println("start agent");
+        System.out.println("agent load by which classloader " + instrumentation.getClass().getClassLoader() + ";"
+                + Thread.currentThread().getContextClassLoader());
         List<String> classNames = new ArrayList<>();
         Arrays.asList(args.split(";")).forEach(str -> {
             classNames.add(str);
@@ -38,6 +40,8 @@ public class Agent {
 
     public static void agentmain(String args, Instrumentation instrumentation) {
         System.out.println("attach agent");
+        System.out.println("agent load by which classloader " + instrumentation.getClass().getClassLoader() + ";"
+                + Thread.currentThread().getContextClassLoader());
         List<String> classNames = new ArrayList<>();
         Arrays.asList(args.split(";")).forEach(str -> {
             classNames.add(str);
@@ -57,16 +61,23 @@ public class Agent {
         // instrumentation.addTransformer(transformer, true);
 
         ClassFileTransformer transformer = new ModifyMethodTransformer(classNames);
+        instrumentation.addTransformer(transformer);
+
+        // 针对已经加载过的类进行重新改写
+        Class<?>[] loaded_clazzes = instrumentation.getAllLoadedClasses();
+        transformer = new ModifyMethodTransformer(classNames);
         instrumentation.addTransformer(transformer, true);
 
-        classNames.forEach(str -> {
-            try {
-                // 针对已经加载过的类进行重新改写
-                instrumentation.retransformClasses(Class.forName(str));
-            } catch (ClassNotFoundException | UnmodifiableClassException e) {
-                e.printStackTrace();
+        for (int i = 0; i < loaded_clazzes.length; i++) {
+            if (classNames.contains(loaded_clazzes[i].getName())) {
+                try {
+                    instrumentation.retransformClasses(loaded_clazzes[i]);
+                } catch (UnmodifiableClassException e) {
+                    e.printStackTrace();
+                }
             }
-        });
+        }
+
     }
 
     public static void main(String[] args)
