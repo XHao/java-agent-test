@@ -12,7 +12,7 @@ public class Command {
         int count = 10;
         while (count-- > 0) {
             try {
-                Thread.sleep(10000L);
+                Thread.sleep(15000L);
             } catch (InterruptedException e) {
             }
             System.out.println("sleep 10s");
@@ -25,7 +25,6 @@ public class Command {
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
-                break;
             } catch (NoSuchMethodException | SecurityException e) {
                 e.printStackTrace();
             }

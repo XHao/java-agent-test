@@ -8,11 +8,11 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 
 /**
- * ModifyMethodTransformer
+ * ModifyMethodTransformer2
  */
-public class ModifyMethodTransformer extends AbstractTransformer {
+public class ModifyMethodTransformer2 extends AbstractTransformer {
 
-    public ModifyMethodTransformer(List<String> classNames) {
+    public ModifyMethodTransformer2(List<String> classNames) {
         super(classNames);
     }
 
@@ -20,7 +20,7 @@ public class ModifyMethodTransformer extends AbstractTransformer {
     protected void updateClass(CtClass clazz) throws CannotCompileException, NotFoundException {
         try {
             CtMethod method = clazz.getDeclaredMethod("echo");
-            method.insertAfter("System.out.println(\"Hello Echo!\");");
+            method.insertAfter("System.out.println(\"Hello Echo2!\");");
         } catch (NotFoundException e) {
         }
     }

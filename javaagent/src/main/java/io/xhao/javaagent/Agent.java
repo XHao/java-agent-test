@@ -33,6 +33,7 @@ public class Agent {
             classNames.add(str);
         });
         ClassFileTransformer transformer = new AddMethodTransformer(classNames);
+        // 注意这里可以是true，不过没什么意义
         instrumentation.addTransformer(transformer);
         transformer = new ModifyMethodTransformer(classNames);
         instrumentation.addTransformer(transformer);
@@ -58,16 +59,24 @@ public class Agent {
          * 如果能在类被定义完成前，则有机会完成重写
          */
         // ClassFileTransformer transformer = new AddMethodTransformer(classNames);
+        // 会和启动时加载的冲突，单独使用attach时，可以加上去
+        // instrumentation.addTransformer(transformer);
+        // 如果下面要retransform的话，这里不能加true，会报错
         // instrumentation.addTransformer(transformer, true);
-
-        ClassFileTransformer transformer = new ModifyMethodTransformer(classNames);
-        instrumentation.addTransformer(transformer);
 
         // 针对已经加载过的类进行重新改写
         Class<?>[] loaded_clazzes = instrumentation.getAllLoadedClasses();
-        transformer = new ModifyMethodTransformer(classNames);
+        ClassFileTransformer transformer = new ModifyMethodTransformer2(classNames);
         instrumentation.addTransformer(transformer, true);
 
+        // 循环2次修改2次，但是不会字节码不会改变2次
+        // 每次更新的时候，总是传的上一次其他transformer修改后的字节码，而不是自己修改后的
+        // new Thread(() -> {
+        // try {
+        // Thread.sleep(30000L);
+        // System.out.println("start retransform!");
+        // } catch (InterruptedException e1) {
+        // }
         for (int i = 0; i < loaded_clazzes.length; i++) {
             if (classNames.contains(loaded_clazzes[i].getName())) {
                 try {
@@ -77,6 +86,20 @@ public class Agent {
                 }
             }
         }
+        // 再来一遍
+        // 如果删掉了，则丢失了改变，即便前一个已经做过一次了
+        // instrumentation.removeTransformer(transformer);
+        // 如果没有删掉，则也不会多做一次
+        for (int i = 0; i < loaded_clazzes.length; i++) {
+            if (classNames.contains(loaded_clazzes[i].getName())) {
+                try {
+                    instrumentation.retransformClasses(loaded_clazzes[i]);
+                } catch (UnmodifiableClassException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        // }).start();
 
     }
 
